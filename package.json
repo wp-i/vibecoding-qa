@@ -1,0 +1,39 @@
+{
+  "name": "vibecoding-qa",
+  "version": "0.1.0",
+  "description": "Functional QA reports for vibe-coded and AI-generated projects.",
+  "type": "module",
+  "bin": {
+    "agent-test": "./bin/agent-test.js",
+    "vibecoding-qa": "./bin/agent-test.js",
+    "vibeqa": "./bin/agent-test.js"
+  },
+  "scripts": {
+    "setup:browser": "playwright install chromium",
+    "probe:browser": "node scripts/probes/browser_smoke_playwright.mjs",
+    "probe:github-url-review": "node scripts/probes/github_url_browser_review.mjs",
+    "probe:user-report": "node scripts/probes/validate_user_report_output.mjs",
+    "selftest:ux": "node scripts/probes/vibecoding_ux_selftest.mjs",
+    "scan:self": "node ./bin/agent-test.js scan --config agent-test.config.json --fail-on-check-failures",
+    "test": "node --test test/*.test.js",
+    "verify": "npm test && npm run selftest:ux && npm run scan:self"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "vibecoding",
+    "vibe-coding",
+    "ai-generated",
+    "ai-coding",
+    "testing",
+    "quality",
+    "qa",
+    "cli",
+    "functional-testing"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.61.0"
+  }
+}

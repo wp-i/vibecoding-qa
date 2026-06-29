@@ -1,0 +1,20 @@
+{
+  "project": {
+    "target": ".",
+    "type": "auto",
+    "ignorePaths": [
+      "docs/showcase"
+    ]
+  },
+  "mode": {
+    "name": "basic",
+    "llm": "no-llm",
+    "maxCostUsd": 0,
+    "maxFiles": 1000
+  },
+  "profiles": ["auto"],
+  "report": {
+    "output": "reports/self/latest",
+    "formats": ["md", "json"]
+  }
+}

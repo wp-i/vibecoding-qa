@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-test.local/schemas/report.schema.json",
+  "title": "agent-test report",
+  "type": "object",
+  "required": ["schemaVersion", "mode", "target", "workspace", "project", "assessmentFocus", "requirements", "security", "quality", "checks", "execution", "boundaries"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "mode": { "type": "string" },
+    "target": { "type": "string" },
+    "workspace": {
+      "type": "object",
+      "required": ["kind", "source", "path", "dynamicExecution", "commands", "safety"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["local", "github"] },
+        "source": { "type": "string" },
+        "path": { "type": "string" },
+        "dynamicExecution": { "type": "string" },
+        "commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "safety": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "project": { "type": "object" },
+    "assessmentFocus": {
+      "type": "object",
+      "required": ["primary", "weights", "deEmphasized"],
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "type": "string", "enum": ["requirement-conformance"] },
+        "weights": {
+          "type": "object",
+          "required": ["requirementConformance", "obviousRisk"],
+          "additionalProperties": false,
+          "properties": {
+            "requirementConformance": { "type": "integer", "const": 90 },
+            "obviousRisk": { "type": "integer", "const": 10 }
+          }
+        },
+        "deEmphasized": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "required": ["count", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer" },
+        "items": { "type": "array" }
+      }
+    },
+    "security": {
+      "type": "object"
+    },
+    "quality": {
+      "type": "object"
+    },
+    "checks": {
+      "type": "object",
+      "required": ["profile", "summary", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "profile": { "type": "string" },
+        "summary": { "type": "object" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "status", "severity", "category", "testKind", "conclusion", "evidence"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed", "skipped", "blocked", "partial"]
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["Blocker", "Critical", "Major", "Minor", "Info"]
+              },
+              "category": {
+                "type": "string",
+                "enum": ["requirement-conformance", "runtime-usability", "obvious-risk", "supporting-signal"]
+              },
+              "testKind": {
+                "type": "string",
+                "enum": ["deterministic", "mocked", "live-eval", "manual-review"]
+              },
+              "conclusion": {
+                "type": "string",
+                "enum": ["failure", "risk", "unverified", "needs-decision", "tooling-issue"]
+              },
+              "evidence": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "execution": { "type": "object" },
+    "boundaries": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

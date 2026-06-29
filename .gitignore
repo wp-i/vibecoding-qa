@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+dist/
+build/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+
+# Local nested projects and scratch targets that are not part of this package.
+comment-vision-claw/
+
+# Generated scan artifacts. Keep selected evidence reports only when explicitly needed.
+/reports/

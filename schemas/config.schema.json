@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-test.local/schemas/config.schema.json",
+  "title": "agent-test configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "Local path or GitHub repository URL to scan."
+        },
+        "type": {
+          "type": "string",
+          "default": "auto"
+        },
+        "ignorePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["basic", "standard", "deep", "audit"],
+          "default": "basic"
+        },
+        "llm": {
+          "type": "string",
+          "enum": ["no-llm", "llm-assisted", "llm-deep"],
+          "default": "no-llm"
+        },
+        "maxCostUsd": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0
+        },
+        "maxFiles": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1000
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": ["auto"]
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "output": {
+          "type": "string",
+          "default": "reports/latest"
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["md", "json"]
+          },
+          "default": ["md", "json"]
+        }
+      }
+    }
+  }
+}
