@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Functional QA reports for vibe-coded and AI-generated projects.",
   "type": "module",
+  "homepage": "https://github.com/wp-i/vibecoding-qa#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wp-i/vibecoding-qa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wp-i/vibecoding-qa/issues"
+  },
   "bin": {
     "agent-test": "./bin/agent-test.js",
     "vibecoding-qa": "./bin/agent-test.js",
