@@ -18,9 +18,7 @@ export async function parseScanArgs(args) {
       cli.report = { ...(cli.report ?? {}), output: next };
       index += 1;
     } else if (arg === "--mode") {
-      requireValue(arg, next);
-      cli.mode = { ...(cli.mode ?? {}), name: next };
-      index += 1;
+      throw new Error("--mode is not supported; agent-test has one LLM-required acceptance mode.");
     } else if (arg === "--max-files") {
       requireValue(arg, next);
       cli.mode = { ...(cli.mode ?? {}), maxFiles: parsePositiveInteger(next, "--max-files") };

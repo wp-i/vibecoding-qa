@@ -100,11 +100,9 @@
 - 多轮测试生成和失败分析产生的额外调用成本。
 - 使用多模型交叉验证时的额外成本。
 
-设计上应支持三种模式：
+早期设计讨论过确定性基础扫描、LLM 辅助扫描和深度 LLM 分析三类路径。
 
-- `no-llm`：只运行确定性工具，适合低成本基础扫描。
-- `llm-assisted`：只在需求抽取、报告总结、失败归因等关键步骤调用 LLM。
-- `llm-deep`：对需求、代码、运行结果和测试生成进行更深度分析，成本更高。
+当前实现已经收敛为单一 LLM-required acceptance 路径：每次 `scan` 都需要 LLM API key，用于生成项目专属验收契约，并在报告中记录 preflight token/cost 估算和实际使用量。
 
 ### 3.3 工具与运行成本
 
@@ -591,9 +589,10 @@ Profile 不应写死具体项目名称，而应基于语言、框架、文件特
 - 修复建议。
 - 测试边界和未覆盖风险。
 
-建议同时输出：
+当前实现应同时输出：
 
-- `report.md`：适合人阅读。
+- `AGENT_TEST_QA_REPORT.md`：适合开发人员、测试 agent 和修复 agent 阅读。
+- `USER_QA_SUMMARY.md`：适合非技术用户、产品或业务负责人阅读。
 - `report.json`：适合自动化系统消费。
 - `artifacts/`：保存日志、截图、覆盖率、扫描结果。
 
@@ -617,8 +616,8 @@ Profile 不应写死具体项目名称，而应基于语言、框架、文件特
 - 自动识别 Node/Python 基础项目。
 - 提取 README/Markdown 中的需求候选项。
 - 执行安装、构建、测试、lint、安全扫描中的可用项。
-- 支持 no-llm 和 llm-assisted 两种模式。
-- 生成 Markdown 报告。
+- 支持 LLM-required acceptance 路径。
+- 生成开发/agent Markdown 报告、纯用户 Markdown 摘要和 JSON 机器报告。
 - 使用一个或多个样例项目验证流程。
 
 ### 阶段二：多测试方式扩展

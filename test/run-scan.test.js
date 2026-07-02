@@ -3,7 +3,37 @@ import assert from "node:assert/strict";
 import { access, mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { runScan } from "../src/core/run-scan.js";
+import { createUsageSummary, runScan } from "../src/core/run-scan.js";
+
+process.env.AGENT_TEST_LLM_API_KEY = "test-key";
+process.env.AGENT_TEST_LLM_MOCK_RESPONSE = JSON.stringify({
+  projectType: "test fixture",
+  userFlows: ["Run the documented user flow"],
+  userVisibleOutputs: ["QA report"],
+  acceptanceRules: [
+    {
+      id: "report-must-be-useful",
+      title: "Report must be useful",
+      rationale: "The project documentation promises user-facing results.",
+      testMethod: "runtime",
+      severity: "Major"
+    }
+  ],
+  costRules: ["Token estimates and actual usage must be disclosed."]
+});
+
+test("createUsageSummary requires an LLM API key", () => {
+  const previous = process.env.AGENT_TEST_LLM_API_KEY;
+  delete process.env.AGENT_TEST_LLM_API_KEY;
+  try {
+    assert.throws(
+      () => createUsageSummary({ llm: { apiKeyEnv: "AGENT_TEST_LLM_API_KEY", fallbackApiKeyEnv: "NO_SUCH_KEY" } }),
+      /LLM API key is required/
+    );
+  } finally {
+    process.env.AGENT_TEST_LLM_API_KEY = previous;
+  }
+});
 
 test("runScan writes markdown and json reports for a local fixture", async () => {
   const root = await mkdtemp(join(tmpdir(), "agent-test-fixture-"));
@@ -54,7 +84,7 @@ test("runScan writes markdown and json reports for a local fixture", async () =>
   const result = await runScan({
     target: root,
     outputDir,
-    mode: "basic",
+    mode: "acceptance",
     config: { mode: { maxFiles: 1000 } }
   });
 
@@ -63,39 +93,47 @@ test("runScan writes markdown and json reports for a local fixture", async () =>
   assert.equal(result.report.requirements.count > 0, true);
 
   const markdown = await readFile(join(outputDir, "AGENT_TEST_QA_REPORT.md"), "utf8");
+  const userSummary = await readFile(join(outputDir, "USER_QA_SUMMARY.md"), "utf8");
   const json = JSON.parse(await readFile(join(outputDir, "report.json"), "utf8"));
 
   await assert.rejects(() => access(join(outputDir, "report.md")));
   await assert.rejects(() => access(join(outputDir, "functional-acceptance-report.md")));
 
   assert.equal(result.reportPath, join(outputDir, "AGENT_TEST_QA_REPORT.md"));
+  assert.equal(result.userSummaryPath, join(outputDir, "USER_QA_SUMMARY.md"));
   assert.equal(result.functionalReportPath, result.reportPath);
   assert.equal(result.primaryMarkdownPath, result.reportPath);
   assert.match(markdown, /Functional Acceptance QA Report/);
+  assert.match(markdown, /USER_QA_SUMMARY.md/);
+  assert.match(userSummary, /用户版测试报告/);
+  assert.match(userSummary, /给非技术读者的结论/);
+  assert.match(userSummary, /详细日志、失败位置和修复线索请看同目录的 `AGENT_TEST_QA_REPORT.md`/);
   assert.match(markdown, /Scope And Method/);
   assert.match(markdown, /API Key And Token Cost/);
-  assert.match(markdown, /API key required: no/);
-  assert.match(markdown, /Actual token usage: input=0, output=0, total=0/);
+  assert.match(markdown, /API key required: yes/);
+  assert.match(markdown, /LLM-Generated Acceptance Contract/);
+  assert.match(markdown, /Report must be useful/);
+  assert.match(markdown, /Actual token usage: input=\d+, output=\d+, total=\d+/);
   assert.match(markdown, /Runtime Evidence Artifacts/);
-  assert.match(markdown, /Status: \*\*attempted-failed\*\*/);
+  assert.match(markdown, /Status: \*\*executed-needs-review\*\*/);
   assert.match(markdown, /pytest: exitCode=0/);
   assert.match(markdown, /88 passed, 1 skipped/);
-  assert.match(markdown, /Runtime Scenario Findings/);
-  assert.match(markdown, /RS-1:/);
-  assert.match(markdown, /returned only very weak decision support/);
-  assert.match(markdown, /Evidence strength: runtime-observation/);
+  assert.match(markdown, /Live Scenario Matrix/);
+  assert.match(markdown, /needs-decision/);
+  assert.match(markdown, /weak-live-signal/);
   assert.match(markdown, /Detailed Defects/);
   assert.equal(json.schemaVersion, "0.1.0");
   assert.equal(json.execution.commandArtifacts.length, 2);
-  assert.equal(json.execution.usage.apiKeyRequired, false);
-  assert.equal(json.execution.usage.preflight.estimatedTotalTokens, 0);
+  assert.equal(json.execution.usage.apiKeyRequired, true);
+  assert.equal(json.execution.usage.preflight.estimatedTotalTokens > 0, true);
   assert.equal(json.execution.usage.preflight.estimatedCostUsd, 0);
-  assert.equal(json.execution.usage.actual.totalTokens, 0);
+  assert.equal(json.execution.usage.actual.totalTokens > 0, true);
   assert.equal(json.execution.usage.actual.costUsd, 0);
   assert.equal(json.assessmentFocus.primary, "requirement-conformance");
   assert.equal(json.assessmentFocus.weights.requirementConformance, 90);
   assert.equal(json.assessmentFocus.weights.obviousRisk, 10);
-  assert.equal(json.checks.profile, "basic");
+  assert.equal(json.checks.profile, "acceptance");
+  assert.equal(json.quality.acceptanceContract.acceptanceRules.length, 1);
   assert.equal(json.security.secrets.count, 0);
   assert.equal(json.quality.overfit.count, 0);
   assert.equal(json.quality.aiDefects.count, 0);
@@ -138,7 +176,7 @@ test("runScan keeps empty-output branches as risk signals without false function
   await runScan({
     target: root,
     outputDir,
-    mode: "basic",
+    mode: "acceptance",
     config: { mode: { maxFiles: 1000 } }
   });
 
@@ -168,7 +206,7 @@ test("runScan marks reports without runtime evidence as unverified for full func
   await runScan({
     target: root,
     outputDir,
-    mode: "basic",
+    mode: "acceptance",
     config: { mode: { maxFiles: 1000 } }
   });
 
@@ -208,7 +246,7 @@ test("runScan marks lightweight runtime-only evidence as partial full functional
   await runScan({
     target: root,
     outputDir,
-    mode: "basic",
+    mode: "acceptance",
     config: { mode: { maxFiles: 1000 } }
   });
 
@@ -217,4 +255,43 @@ test("runScan marks lightweight runtime-only evidence as partial full functional
   assert.match(markdown, /Result: \*\*PARTIAL\*\*/);
   assert.match(markdown, /Status: \*\*partial-runtime-only\*\*/);
   assert.match(markdown, /lightweight runtime commands were recorded/);
+});
+
+test("runScan marks fewer than three passing scenarios as insufficient coverage", async () => {
+  const root = await mkdtemp(join(tmpdir(), "agent-test-scenario-coverage-"));
+  await writeFile(join(root, "README.md"), "# CLI Tool\n\n- Must process user input and print an answer.\n", "utf8");
+  await writeFile(join(root, "main.py"), "print('Useful answer with enough decision value')\n", "utf8");
+  await writeFile(join(root, "requirements.txt"), "pytest\n", "utf8");
+  await mkdir(join(root, "tests"));
+  await writeFile(join(root, "tests", "test_smoke.py"), "def test_smoke():\n    assert True\n", "utf8");
+
+  const outputDir = join(root, "out");
+  await mkdir(join(outputDir, "runtime"), { recursive: true });
+  await writeFile(
+    join(outputDir, "runtime", "scenario-01-main-flow.json"),
+    JSON.stringify({
+      name: "scenario-01-main-flow",
+      command: ["python", "main.py", "alpha input"],
+      cwd: root,
+      exitCode: 0,
+      timedOut: false,
+      durationMs: 100,
+      stdout: "Useful answer with enough decision value.\n",
+      stderr: ""
+    }),
+    "utf8"
+  );
+
+  await runScan({
+    target: root,
+    outputDir,
+    mode: "acceptance",
+    config: { mode: { maxFiles: 1000 } }
+  });
+
+  const markdown = await readFile(join(outputDir, "AGENT_TEST_QA_REPORT.md"), "utf8");
+
+  assert.match(markdown, /Result: \*\*PARTIAL\*\*/);
+  assert.match(markdown, /Status: \*\*executed-insufficient-scenarios\*\*/);
+  assert.match(markdown, /at least 3 diverse scenarios/);
 });

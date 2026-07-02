@@ -8,13 +8,30 @@ import { tmpdir } from "node:os";
 
 const execFileAsync = promisify(execFile);
 
+process.env.AGENT_TEST_LLM_API_KEY = "test-key";
+process.env.AGENT_TEST_LLM_MOCK_RESPONSE = JSON.stringify({
+  projectType: "cli fixture",
+  userFlows: ["Run the CLI"],
+  userVisibleOutputs: ["QA report"],
+  acceptanceRules: [
+    {
+      id: "cli-output-useful",
+      title: "CLI output must be useful",
+      rationale: "The project exposes a CLI scan command.",
+      testMethod: "runtime",
+      severity: "Major"
+    }
+  ],
+  costRules: ["Token estimates and actual usage must be disclosed."]
+});
+
 test("CLI help prints usage", async () => {
   const { stdout } = await execFileAsync("node", ["./bin/agent-test.js", "--help"]);
 
   assert.match(stdout, /Usage:/);
   assert.match(stdout, /agent-test scan/);
   assert.match(stdout, /agent-test scan <path-or-github-url>/);
-  assert.match(stdout, /no LLM\/API token usage in basic mode/);
+  assert.match(stdout, /LLM API key is required/);
 });
 
 test("CLI rejects unknown commands", async () => {
@@ -70,7 +87,7 @@ test("CLI scan accepts positional target and prints token cost estimate", async 
   ]);
 
   assert.match(stdout, /Preflight token\/cost estimate:/);
-  assert.match(stdout, /API key required: no/);
+  assert.match(stdout, /API key required: yes/);
   assert.match(stdout, /Estimated cost: \$0/);
   assert.match(stdout, /Actual token\/cost usage:/);
   assert.match(stdout, /Cost: \$0/);

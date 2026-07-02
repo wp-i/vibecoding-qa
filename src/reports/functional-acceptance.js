@@ -32,6 +32,10 @@ export function renderFunctionalAcceptanceReport(report) {
     "",
     ...usageBlock(report.execution?.usage),
     "",
+    "### LLM-Generated Acceptance Contract",
+    "",
+    ...acceptanceContractBlock(report.quality?.acceptanceContract),
+    "",
     "### Full Functional Flow Verification",
     "",
     ...fullFlowBlock(report, scenarioSummaries),
@@ -158,7 +162,8 @@ function scopeBlock(report) {
     "",
     "### Generated Artifacts",
     "",
-    "- `AGENT_TEST_QA_REPORT.md`: single human/developer/agent handoff report.",
+    "- `AGENT_TEST_QA_REPORT.md`: developer/agent handoff report with reproduction evidence and repair guidance.",
+    "- `USER_QA_SUMMARY.md`: concise non-technical reader report for product/business review.",
     "- `report.json`: machine-readable scan result.",
     "- Runtime artifacts remain under `runtime/` and are summarized in this report; they are supporting evidence, not additional handoff reports.",
     "",
@@ -193,6 +198,35 @@ function usageBlock(usage) {
     ...((preflight.notes ?? []).map((note) => `- Preflight note: ${note}`)),
     ...((actual.notes ?? []).map((note) => `- Actual usage note: ${note}`))
   ];
+}
+
+function acceptanceContractBlock(contract) {
+  if (!contract) {
+    return [
+      "- Contract status: not generated",
+      "- This is a blocking test-tool issue because LLM-generated project understanding is required."
+    ];
+  }
+  const lines = [
+    `- Project type: ${contract.projectType ?? "unknown"}`,
+    `- User flows: ${contract.userFlows?.length ? contract.userFlows.join("; ") : "none generated"}`,
+    `- User-visible outputs: ${contract.userVisibleOutputs?.length ? contract.userVisibleOutputs.join("; ") : "none generated"}`
+  ];
+  const rules = contract.acceptanceRules ?? [];
+  if (rules.length === 0) {
+    lines.push("- Acceptance rules: none generated");
+  } else {
+    lines.push("", "| Rule | Severity | Method | Rationale |", "| --- | --- | --- | --- |");
+    for (const rule of rules.slice(0, 12)) {
+      lines.push(
+        `| ${escapeTable(rule.title ?? rule.id)} | ${escapeTable(rule.severity ?? "Major")} | ${escapeTable(rule.testMethod ?? "runtime")} | ${escapeTable(rule.rationale ?? "")} |`
+      );
+    }
+  }
+  for (const rule of contract.costRules ?? []) {
+    lines.push(`- Cost rule: ${rule}`);
+  }
+  return lines;
 }
 
 function formatUsd(value) {
@@ -264,6 +298,20 @@ function fullFlowAssessment(report, scenarioSummaries) {
         nextSteps: [
           "Review scenario output quality against the documented core requirements.",
           "Add clearer oracle checks or additional scenarios if the current evidence is too weak for acceptance."
+        ]
+      };
+    }
+    if (scenarioSummaries.length < 3) {
+      return {
+        status: "executed-insufficient-scenarios",
+        result: "PARTIAL",
+        reason: `${scenarioSummaries.length} representative runtime scenario artifact(s) were attached and passed obvious checks, but at least 3 diverse scenarios are expected after a full flow is runnable.`,
+        blockers: [
+          "Scenario coverage is too narrow to treat the project as complete functional acceptance."
+        ],
+        nextSteps: [
+          "Record at least 3 diverse scenario artifacts that exercise materially different user inputs, output paths, and edge cases.",
+          "Keep the scenario inputs derived from the target project's documented user value instead of reusing one prompt with small wording changes."
         ]
       };
     }

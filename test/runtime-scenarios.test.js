@@ -6,7 +6,7 @@ import {
   collectScenarioSummariesFromArtifacts
 } from "../src/analyzers/runtime-scenarios.js";
 
-test("classifyScenarioArtifact fails very weak adjacent leads as runtime findings", () => {
+test("classifyScenarioArtifact reviews explicitly weak adjacent leads", () => {
   const artifact = scenarioArtifact([
     "Investigation complete",
     "Recommended adjacent reference: https://github.com/example-org/security-agent",
@@ -17,10 +17,9 @@ test("classifyScenarioArtifact fails very weak adjacent leads as runtime finding
 
   const result = classifyScenarioArtifact(artifact);
 
-  assert.equal(result.result, "Fail");
-  assert.equal(result.conclusion, "failure");
-  assert.equal(result.evidenceStrength, "runtime-observation");
-  assert.match(result.fixFocus, /core intent extraction/);
+  assert.equal(result.result, "Review");
+  assert.equal(result.conclusion, "needs-decision");
+  assert.equal(result.evidenceStrength, "weak-live-signal");
 });
 
 test("classifyScenarioArtifact treats timed out scenarios as blocked full-flow evidence", () => {
@@ -62,7 +61,7 @@ test("classifyScenarioArtifact fails no-result reports without recovery evidence
   assert.equal(result.conclusion, "failure");
 });
 
-test("classifyScenarioArtifact reviews low-confidence leads that are not obviously useless", () => {
+test("classifyScenarioArtifact does not judge low numeric scores without contract evidence", () => {
   const artifact = scenarioArtifact([
     "Candidate: https://github.com/example-org/project",
     "Score: 35/100",
@@ -71,13 +70,13 @@ test("classifyScenarioArtifact reviews low-confidence leads that are not obvious
 
   const result = classifyScenarioArtifact(artifact);
 
-  assert.equal(result.result, "Review");
-  assert.equal(result.conclusion, "needs-decision");
+  assert.equal(result.result, "Pass");
+  assert.equal(result.conclusion, "risk");
 });
 
 test("runtime scenario summaries and findings share one classification model", () => {
   const artifacts = [
-    scenarioArtifact("Candidate: https://github.com/example-org/project\nScore: 2/100", "scenario-01-demo")
+    scenarioArtifact("No usable lead.", "scenario-01-demo")
   ];
 
   const summaries = collectScenarioSummariesFromArtifacts(artifacts);

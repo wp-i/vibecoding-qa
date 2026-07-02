@@ -31,7 +31,7 @@
 
 ## 4. 成本和安全
 
-- [x] 已定义 basic、standard、deep、audit 四档测试模式。
+- [x] 已收敛为单一 LLM-required acceptance 路径。
 - [x] 已说明 LLM API key 和 token 成本。
 - [x] 已要求单次预算上限。
 - [x] 已要求陌生 GitHub 仓库动态执行必须隔离。
@@ -43,7 +43,7 @@
 - [x] 配置文件 schema。
 - [x] `report.json` schema。
 - [x] 任务状态模型，例如 `passed`、`failed`、`skipped`、`blocked`、`partial`。
-- [x] basic profile 的第一版实现。
+- [x] acceptance profile 的第一版实现。
 - [x] 本工程自测 profile。
 - [x] 最小 CI。
 
@@ -56,6 +56,6 @@
 ## 7. 第一版脚手架验证结果
 
 - [x] `npm test` 通过。
-- [x] `npm run scan:self` 可生成 `AGENT_TEST_QA_REPORT.md` 和 `report.json`。
-- [x] 自扫描 basic checks 通过 7/7。
-- [x] 当前 basic 模式不会执行陌生项目代码。
+- [x] `npm run scan:self` 可生成 `AGENT_TEST_QA_REPORT.md`、`USER_QA_SUMMARY.md` 和 `report.json`。
+- [x] 自扫描 acceptance checks 通过。
+- [x] 当前 `scan` 不会默认执行陌生项目代码；动态证据必须通过 `agent-test run` 显式记录。

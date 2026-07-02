@@ -72,6 +72,56 @@ test("scanOverfitRisks ignores generic report template headings", async () => {
   assert.equal(result.count, 0);
 });
 
+test("scanOverfitRisks ignores UI contract copy implemented in UI files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "agent-test-overfit-"));
+  await mkdir(join(root, "docs"));
+  await mkdir(join(root, "github_deep_search", "static"), { recursive: true });
+  await mkdir(join(root, "ui", "src"), { recursive: true });
+  await writeFile(
+    join(root, "docs", "UI_REDESIGN_HANDOFF.md"),
+    [
+      "- Steps:",
+      "  - `理解目标`",
+      "  - `规划搜索`",
+      "  - `收集证据`",
+      "  - `分析项目`",
+      "  - `生成报告`",
+      "- Button label becomes `正在调研`.",
+      ""
+    ].join("\n"),
+    "utf8"
+  );
+  await writeFile(
+    join(root, "github_deep_search", "static", "app.js"),
+    'const steps = ["理解目标", "规划搜索", "收集证据", "分析项目", "生成报告"];\nrunLabel.textContent = "正在调研";\n',
+    "utf8"
+  );
+  await writeFile(
+    join(root, "ui", "src", "App.tsx"),
+    'const steps = ["理解目标", "规划搜索", "收集证据", "分析项目", "生成报告"];\n',
+    "utf8"
+  );
+
+  const project = await inspectProject(root);
+  const result = await scanOverfitRisks(project);
+
+  assert.equal(result.count, 0);
+});
+
+test("scanOverfitRisks still flags UI contract copy reused in core search logic", async () => {
+  const root = await mkdtemp(join(tmpdir(), "agent-test-overfit-"));
+  await mkdir(join(root, "docs"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "docs", "UI_REDESIGN_HANDOFF.md"), "- `理解目标`\n", "utf8");
+  await writeFile(join(root, "src", "search.js"), 'const SEARCH_ALIAS = "理解目标";\n', "utf8");
+
+  const project = await inspectProject(root);
+  const result = await scanOverfitRisks(project);
+
+  assert.equal(result.count, 1);
+  assert.equal(result.findings[0].path, "src/search.js");
+});
+
 test("scanOverfitRisks still checks fixture input assignments", async () => {
   const root = await mkdtemp(join(tmpdir(), "agent-test-overfit-"));
   await mkdir(join(root, "tests"));

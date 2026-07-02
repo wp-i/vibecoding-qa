@@ -32,23 +32,60 @@
       "properties": {
         "name": {
           "type": "string",
-          "enum": ["basic", "standard", "deep", "audit"],
-          "default": "basic"
-        },
-        "llm": {
-          "type": "string",
-          "enum": ["no-llm", "llm-assisted", "llm-deep"],
-          "default": "no-llm"
-        },
-        "maxCostUsd": {
-          "type": "number",
-          "minimum": 0,
-          "default": 0
+          "const": "acceptance",
+          "default": "acceptance"
         },
         "maxFiles": {
           "type": "integer",
           "minimum": 1,
           "default": 1000
+        }
+      }
+    },
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiKeyEnv": {
+          "type": "string",
+          "default": "AGENT_TEST_LLM_API_KEY"
+        },
+        "fallbackApiKeyEnv": {
+          "type": "string",
+          "default": "OPENAI_API_KEY"
+        },
+        "baseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-5-mini"
+        },
+        "estimatedInputTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30000
+        },
+        "estimatedOutputTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6000
+        },
+        "inputUsdPer1M": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0
+        },
+        "outputUsdPer1M": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0
+        },
+        "maxCostUsd": {
+          "type": "number",
+          "minimum": 0,
+          "default": 5
         }
       }
     },

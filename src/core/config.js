@@ -23,6 +23,10 @@ export function mergeConfig(base, override) {
       ...base.mode,
       ...override.mode
     },
+    llm: {
+      ...base.llm,
+      ...override.llm
+    },
     profiles: override.profiles ?? base.profiles,
     security: {
       ...base.security,
@@ -47,10 +51,19 @@ export function defaultConfig() {
       ignorePaths: []
     },
     mode: {
-      name: "basic",
-      llm: "no-llm",
-      maxCostUsd: 0,
+      name: "acceptance",
       maxFiles: 1000
+    },
+    llm: {
+      apiKeyEnv: "AGENT_TEST_LLM_API_KEY",
+      fallbackApiKeyEnv: "OPENAI_API_KEY",
+      baseUrl: "https://api.openai.com/v1",
+      model: "gpt-5-mini",
+      estimatedInputTokens: 30000,
+      estimatedOutputTokens: 6000,
+      inputUsdPer1M: 0,
+      outputUsdPer1M: 0,
+      maxCostUsd: 5
     },
     profiles: ["auto"],
     security: {

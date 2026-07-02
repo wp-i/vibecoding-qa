@@ -1,8 +1,8 @@
 import { CHECK_CATEGORY, CONCLUSION, SEVERITY, STATUS, TEST_KIND, summarizeChecks } from "../core/status.js";
 
 export const basicProfile = {
-  id: "basic",
-  title: "Basic requirement-first vibeCoding profile",
+  id: "acceptance",
+  title: "LLM-required requirement-first vibeCoding acceptance profile",
   dynamicExecution: "disabled"
 };
 
@@ -36,6 +36,19 @@ export function runBasicProfile({
       severity: SEVERITY.MAJOR,
       category: CHECK_CATEGORY.REQUIREMENT_CONFORMANCE,
       evidence: [`Extracted ${requirements.items.length} requirement candidates.`]
+    }),
+    check({
+      id: "llm-acceptance-contract-generated",
+      title: "LLM-generated acceptance contract is present",
+      passed: (quality.acceptanceContract?.acceptanceRules ?? []).length > 0,
+      severity: SEVERITY.CRITICAL,
+      category: CHECK_CATEGORY.REQUIREMENT_CONFORMANCE,
+      testKind: TEST_KIND.LIVE_EVAL,
+      conclusion: CONCLUSION.FAILURE,
+      evidence: [
+        `Generated ${(quality.acceptanceContract?.acceptanceRules ?? []).length} acceptance rule(s).`,
+        "The scan requires project-specific rules generated from target project evidence."
+      ]
     }),
     ...runtimeChecks(project),
     ...qualityChecks(project),
@@ -106,7 +119,7 @@ function userReportQualityPassEvidence(userReports = {}) {
       "No runtime user-visible report artifact was attached; final QA report must be treated as incomplete for live functional acceptance."
     ];
   }
-  return [`Checked ${checked} runtime user-visible report artifact(s) for empty output, unwanted internal content, duplicate content, zero-score references, directory repositories, missing artifact-consumption review and browser user-journey contract drift.`];
+  return [`Checked ${checked} runtime user-visible report artifact(s) for empty output, unwanted internal content, duplicate content, missing artifact-consumption review and browser/user-journey contract drift.`];
 }
 
 function secretPassEvidence(secrets) {
@@ -225,14 +238,14 @@ function requiresEnvironmentExample(project) {
     || project.files.some((file) => file.path.toLowerCase().includes("user_keys"));
 }
 
-function check({ id, title, passed, severity, category, evidence, conclusion }) {
+function check({ id, title, passed, severity, category, evidence, conclusion, testKind }) {
   return {
     id,
     title,
     status: passed ? STATUS.PASSED : STATUS.FAILED,
     severity,
     category,
-    testKind: TEST_KIND.DETERMINISTIC,
+    testKind: testKind ?? TEST_KIND.DETERMINISTIC,
     conclusion: conclusion ?? (passed ? CONCLUSION.RISK : CONCLUSION.FAILURE),
     evidence
   };

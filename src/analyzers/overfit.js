@@ -28,6 +28,7 @@ export async function scanOverfitRisks(project) {
 
     for (const phrase of phrases) {
       if (lowered.includes(phrase.normalized)) {
+        if (isUiContractPhraseReuse(file, phrase)) continue;
         findings.push({
           phrase: phrase.text,
           path: file.path,
@@ -167,6 +168,23 @@ function isSchemaConceptExtraction(name, block) {
 
 function isLicenseOrPolicyPhrase(text) {
   return /\b(?:license|licence|copyright|trademark|terms of service|privacy policy)\b/i.test(text);
+}
+
+function isUiContractPhraseReuse(file, phrase) {
+  return isUiContractDoc(phrase.source) && isUiImplementationFile(file.path);
+}
+
+function isUiContractDoc(path) {
+  const lower = String(path ?? "").toLowerCase();
+  return lower.startsWith("docs/")
+    && /(?:ui|ux|frontend|front-end|web|redesign|design|handoff)/i.test(lower);
+}
+
+function isUiImplementationFile(path) {
+  const lower = String(path ?? "").toLowerCase();
+  if (/(?:^|\/)server\.[cm]?[jt]s$/.test(lower)) return false;
+  return /(?:^|\/)(?:ui|client|frontend|front-end|web|static|public|assets)\//.test(lower)
+    && /\.(?:[cm]?[jt]sx?|html|css)$/.test(lower);
 }
 
 function looksLikeRequirementPhrase(text) {

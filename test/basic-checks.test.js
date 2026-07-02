@@ -2,6 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { runBasicChecks } from "../src/core/basic-checks.js";
 
+function quality(overrides = {}) {
+  return {
+    overfit: { count: 0, phraseCount: 0, findings: [] },
+    acceptanceContract: {
+      acceptanceRules: [{ id: "rule", title: "Rule" }]
+    },
+    ...overrides
+  };
+}
+
 test("basic checks summarize pass and fail states", () => {
   const checks = runBasicChecks({
     project: {
@@ -17,13 +27,13 @@ test("basic checks summarize pass and fail states", () => {
     },
     requirements: { items: [{ id: "README.md:1" }] },
     security: { secrets: { count: 0, findings: [] } },
-    quality: { overfit: { count: 0, phraseCount: 0, findings: [] } }
+    quality: quality()
   });
 
-  assert.equal(checks.summary.total, 11);
-  assert.equal(checks.summary.passed, 11);
+  assert.equal(checks.summary.total, 12);
+  assert.equal(checks.summary.passed, 12);
   assert.equal(checks.summary.failed, 0);
-  assert.equal(checks.profile, "basic");
+  assert.equal(checks.profile, "acceptance");
   assert.equal(checks.items[0].severity, "Major");
   assert.equal(checks.items[0].category, "requirement-conformance");
   assert.equal(checks.items[0].testKind, "deterministic");
@@ -50,7 +60,7 @@ test("basic checks use Python project expectations", () => {
     },
     requirements: { items: [{ id: "README.md:1" }] },
     security: { secrets: { count: 0, findings: [] } },
-    quality: { overfit: { count: 0, phraseCount: 0, findings: [] } }
+    quality: quality()
   });
 
   assert.equal(checks.items.some((item) => item.id === "python-dependency-manifest-present"), true);
@@ -75,7 +85,7 @@ test("basic checks recognize conventional Python script entrypoints", () => {
     },
     requirements: { items: [{ id: "README.md:1" }] },
     security: { secrets: { count: 0, findings: [] } },
-    quality: { overfit: { count: 0, phraseCount: 0, findings: [] } }
+    quality: quality()
   });
 
   const entrypointCheck = checks.items.find((item) => item.id === "python-entrypoint-present");

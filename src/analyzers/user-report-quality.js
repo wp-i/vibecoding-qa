@@ -25,11 +25,6 @@ const RECOVERY_EVIDENCE_PATTERNS = [
   /下一步.*(?:关键词|query|搜索|search)/i
 ];
 
-const DIRECTORY_REPO_PATTERNS = [
-  /\b(?:awesome|daily|newsletter|curated list|project list|list of projects|interesting projects)\b/i,
-  /A list (?:of )?(?:cool|awesome|interesting) projects/i
-];
-
 export function analyzeUserVisibleReportsFromArtifacts(artifacts = []) {
   const userArtifacts = artifacts.filter(isUserReportArtifact);
   const consumptionReviewArtifacts = artifacts.filter((artifact) => CONSUMPTION_REVIEW_ARTIFACT.test(artifact.name ?? ""));
@@ -123,7 +118,7 @@ function isNegativeConsumptionVerdict(item) {
     .map((value) => String(value ?? "").toLowerCase())
     .filter(Boolean);
   return values.some((value) => (
-    /^(mismatch|irrelevant|not[-_ ]?relevant|unsupported|contradicted|directory-or-list-repository|open-failed)$/.test(value)
+    /^(mismatch|irrelevant|not[-_ ]?relevant|unsupported|contradicted|open-failed)$/.test(value)
   ));
 }
 
@@ -132,7 +127,7 @@ function shouldFailConsumptionItem(item) {
 
   const hardFailure = [item?.verdict, item?.requirementMatch]
     .map((value) => String(value ?? "").toLowerCase())
-    .some((value) => /^(directory-or-list-repository|open-failed|unsupported|contradicted)$/.test(value));
+    .some((value) => /^(open-failed|unsupported|contradicted)$/.test(value));
   if (hardFailure) return true;
 
   return !isClearlyWeakReferenceClaim(item);
@@ -141,9 +136,6 @@ function shouldFailConsumptionItem(item) {
 function isClearlyWeakReferenceClaim(item) {
   const claim = String(item?.claimedByReport ?? "");
   if (!claim.trim()) return false;
-
-  const score = claim.match(/(\d{1,3})\s*\/\s*100/);
-  if (score && Number.parseInt(score[1], 10) < 50) return true;
 
   return /相邻(?:参考|方向|线索)|找灵感|不适合直接采用|核心能力[^。；\n]*(?:尚未确认|未确认)|仍未确认|weak|adjacent|not directly adoptable|unverified/i.test(claim);
 }
@@ -196,35 +188,6 @@ export function analyzeUserVisibleReportText(text, options = {}) {
       actual: "The report repeats the same line or repository URL enough to reduce report quality.",
       expected: "The report should deduplicate repeated sections, repeated project URLs, and repeated boilerplate.",
       evidence: duplicateEvidence.slice(0, 8)
-    });
-  }
-
-  const zeroScoreEvidence = lines.filter((line) => /(?:关联度|相关度|relevance|score|match)[^\n]{0,40}0\s*\/\s*100/i.test(line)
-    || /0\s*\/\s*100[^\n]{0,40}(?:参考|相邻|项目|project|repo)/i.test(line));
-  if (zeroScoreEvidence.length > 0) {
-    findings.push({
-      id: "user-report-zero-score-reference-visible",
-      title: "Zero-score project is displayed as a reference",
-      severity: "Major",
-      kind: "zero-score-reference-shown",
-      artifact,
-      actual: "A project with 0/100 relevance is still shown as a reference/candidate to the user.",
-      expected: "Zero-score projects should be rejected or lifted to a positive score only when there is explicit adjacent evidence.",
-      evidence: zeroScoreEvidence.slice(0, 8)
-    });
-  }
-
-  const directoryEvidence = lines.filter((line) => DIRECTORY_REPO_PATTERNS.some((pattern) => pattern.test(line)));
-  if (directoryEvidence.length > 0) {
-    findings.push({
-      id: "user-report-directory-repo-returned",
-      title: "Directory/list repository is returned as a candidate project",
-      severity: "Major",
-      kind: "directory-repo-returned",
-      artifact,
-      actual: "The user-visible report includes a repository that appears to be a generic project list, newsletter, or directory.",
-      expected: "Repository recommendations should be runnable or directly relevant projects, not generic lists unless explicitly requested.",
-      evidence: directoryEvidence.slice(0, 8)
     });
   }
 

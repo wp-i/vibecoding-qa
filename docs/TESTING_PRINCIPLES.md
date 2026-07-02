@@ -13,7 +13,14 @@ All future changes must follow these rules:
 - Historical reports and workflow notes may mention real project names as evidence, but runtime analyzers must not depend on those names.
 - If a defect cannot be generalized, it belongs in a manual report for that target project, not in `agent-test` core logic.
 
-Allowed generic problem families include completed-empty output, stale results after a changed input, user-visible debug/internal content, duplicate user-visible content, unverified returned links, zero-score candidates shown as references, and directory/list/newsletter resources presented as direct runnable projects.
+Allowed generic problem families include completed-empty output, stale results after a changed input, user-visible debug/internal content, duplicate user-visible content, unverified returned links, and project-specific output-quality failures backed by the generated acceptance contract.
+
+Self-test guardrail:
+
+- Production acceptance code in `src/analyzers`, `src/profiles`, and `src/reports` must pass `test/no-hard-coded-acceptance-rules.test.js`.
+- The guard intentionally blocks historical incident tokens, fixed structured output field names, repository/category labels, and fixed semantic score thresholds from becoming generic acceptance logic.
+- If a new target project needs a product-specific standard, add it to the LLM-generated acceptance contract and verify it through runtime artifacts instead of adding a hard-coded branch.
+- Deterministic code may collect evidence, normalize artifacts, check execution health, and enforce platform-level report integrity, but it must not invent product-specific quality criteria.
 
 ## 0.1 User-consumed artifact oracle
 
@@ -49,11 +56,18 @@ Use this judgment model for live or recorded user scenarios:
 - `Review`: the scenario completed, but the result needs product judgment, deeper evidence, or comparison against a volatile external source. Examples include no-result reports with useful search coverage and recovery guidance, or low-confidence candidates that are clearly labeled as weak.
 - `Fail`: the scenario command failed, the user-visible output is blank without recovery value, or the output presents very weak/clearly unsuitable leads as organized results with insufficient decision value.
 
+Scenario coverage rule:
+
+- After one representative full flow is executable, a complete acceptance run should record at least 3 diverse `scenario-*` artifacts.
+- The scenarios should vary the user input, expected output path, and edge condition according to the target project's own documentation.
+- Rewording one prompt three times is not sufficient coverage.
+- Fewer than 3 passing scenarios is a `PARTIAL` acceptance result, not a complete pass. A failing scenario still fails the run immediately.
+
 For search, recommendation, research, ranking and report-generation products:
 
-- Very low-score leads, such as `1/100`, `2/100`, or `3/100`, should normally not be presented as normal organized leads. If they are the only remaining items, the product should convert them into search-failure context, rejected/weak evidence, or next-search guidance.
-- Generic concepts such as `open-source`, `tool`, `project`, `website`, or `report` must not dominate candidate admission when the user's requirement contains specific capabilities.
-- A weak adjacent reference is not automatically a defect if it is clearly labeled as weak, adjacent, rejected, unverified, or not directly adoptable. The defect is presenting weak material in a way that does not help the user make the next decision.
+- The LLM-generated project contract should define what counts as useful direct, partial, adjacent, rejected, or no-result output for that target project.
+- Built-in code must not hard-fail a project solely because of a fixed score threshold, a specific field name, or a repository/category label that came from one historical incident.
+- A weak adjacent reference is not automatically a defect if it is clearly labeled as weak, adjacent, rejected, unverified, or not directly adoptable. Whether it is useful enough should be judged against the generated project contract and scenario evidence.
 - Artifact consumption review is supporting evidence. A shallow page title or README skim can reveal obvious mismatch, but it should not be the only basis for proving that a correct answer exists or that the product should have found it.
 - Live/runtime findings must include evidence freshness. If artifacts are older than target code changes, older than the report freshness policy, or lack internal timestamps, the report must warn that concrete repository names, screenshots, scores or page contents may be stale.
 

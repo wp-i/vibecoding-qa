@@ -245,8 +245,8 @@ npm run setup:browser
    - 完成态空白输出。
    - 不该展示给用户的 debug、raw JSON、内部字段、栈信息、密钥名或工具流水。
    - 重复段落、重复项目、重复 URL 或模板化堆叠。
-   - 0/100 或无证据候选被当成正常参考展示。
-   - directory/list/newsletter/awesome list 类资源被当成直接满足需求的项目。
+   - 被项目契约判定为无证据或不支持需求的候选被当成正常参考展示。
+   - 泛化资源被当成直接满足需求的项目，但报告没有给出契约依据或可消费证据。
    - 报告中的 GitHub/网站/项目地址是否经过基础打开和相关性核验。
 
 3. 这项能力不是“截图解析”。截图可以作为证据，但自动判断优先使用 runtime artifact 中的 stdout、DOM/bodyText、结构化 JSON、浏览器 URL review 和必要时的人工复核。
@@ -259,7 +259,7 @@ npm run setup:browser
 
 - 新增 `src/analyzers/user-report-quality.js`。
 - 新增 `user-visible-report-quality-passed` profile gate。
-- `functional-acceptance-report.md` 新增 User-Visible Report Quality 章节。
+- `AGENT_TEST_QA_REPORT.md` 新增 User-Visible Report Quality 章节。
 - 新增 `scripts/probes/validate_user_report_output.mjs`。
 - 新增 `scripts/probes/github_url_browser_review.mjs`。
 - 新增 `npm run probe:user-report` 和 `npm run probe:github-url-review`。

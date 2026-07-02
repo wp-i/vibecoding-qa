@@ -1,25 +1,29 @@
 # Report Schema
 
-`agent-test` writes one human handoff report and one machine-readable report:
+`agent-test` writes two human-facing reports and one machine-readable report:
 
-- `AGENT_TEST_QA_REPORT.md` for human review, developer handoff and repair-agent input.
+- `AGENT_TEST_QA_REPORT.md` for developer handoff and repair-agent input.
+- `USER_QA_SUMMARY.md` for non-technical product, business or stakeholder review.
 - `report.json` for automation, CI gates and historical comparison.
 
-`AGENT_TEST_QA_REPORT.md` is the single preferred handoff artifact when the goal is to read the result or ask another agent/developer to reproduce, diagnose and fix functional defects. It contains defect titles, requirement basis, test case class, actual result, expected result, suggested fix area, acceptance criteria and summarized runtime evidence.
+`AGENT_TEST_QA_REPORT.md` is the preferred handoff artifact when the goal is to ask another agent/developer to reproduce, diagnose and fix functional defects. It contains defect titles, requirement basis, test case class, actual result, expected result, suggested fix area, acceptance criteria and summarized runtime evidence.
+
+`USER_QA_SUMMARY.md` is the preferred reading artifact when the audience only needs a concise decision report. It must reduce technical language, keep the conclusion visible near the top, summarize tested flows in plain language, and translate defects or risks into business-friendly impact and next steps.
 
 The machine-readable contract is defined in [schemas/report.schema.json](../schemas/report.schema.json).
 
 ## Required Top-Level Fields
 
 - `schemaVersion`: report contract version.
-- `mode`: execution mode, for example `basic`.
+- `mode`: fixed execution mode, currently `acceptance`.
 - `target`: original local path or GitHub URL.
 - `workspace`: resolved scan workspace and dynamic execution policy.
 - `project`: detected project metadata.
 - `assessmentFocus`: requirement-first assessment policy for vibeCoding projects.
 - `requirements`: extracted requirement candidates.
 - `quality.aiDefects`: low-cost smoke findings for common AI-generated project functional defects.
-- `quality.userReports`: findings from user-visible output quality gates, including empty completed output, unwanted internal content, duplicated content, zero-score references, directory/list repositories, missing artifact-consumption review and consumed targets that contradict report claims.
+- `quality.userReports`: findings from user-visible output quality gates, including empty completed output, unwanted internal content, duplicated content, missing artifact-consumption review and consumed targets that contradict report claims.
+- `quality.acceptanceContract`: LLM-generated project understanding, user flows, user-visible outputs and project-specific acceptance rules.
 - `checks`: executed profile checks.
 - `execution`: start time, finish time, duration, runtime artifacts and token/API usage accounting.
 - `boundaries`: explicit limitations of the current run.
@@ -28,20 +32,23 @@ The machine-readable contract is defined in [schemas/report.schema.json](../sche
 
 Every report must state whether the run required API keys and how much token/API cost was estimated and actually recorded. This is stored under `execution.usage`.
 
-Current `basic` mode uses `mode.llm = "no-llm"` and records:
+The single `acceptance` mode requires an LLM API key and records:
 
-- `apiKeyRequired: false`
-- `apiKeys: []`
-- `preflight.estimatedInputTokens: 0`
-- `preflight.estimatedOutputTokens: 0`
-- `preflight.estimatedTotalTokens: 0`
-- `preflight.estimatedCostUsd: 0`
-- `actual.inputTokens: 0`
-- `actual.outputTokens: 0`
-- `actual.totalTokens: 0`
-- `actual.costUsd: 0`
+- `apiKeyRequired: true`
+- `apiKeys`: accepted key environment variables, normally `AGENT_TEST_LLM_API_KEY` and `OPENAI_API_KEY`
+- `llmMode: "required"`
+- `preflight.estimatedInputTokens`
+- `preflight.estimatedOutputTokens`
+- `preflight.estimatedTotalTokens`
+- `preflight.estimatedCostUsd`
+- `preflight.maxCostUsd`
+- `actual.inputTokens`
+- `actual.outputTokens`
+- `actual.totalTokens`
+- `actual.costUsd`
+- `actual.estimated`: whether some token usage had to be locally estimated because the provider did not return usage fields
 
-Any future LLM-backed or paid-API-backed mode must print a preflight estimate before execution and write the real recorded consumption after execution. If price configuration is missing, the report must say the estimate is incomplete instead of presenting a false precise cost.
+If price configuration is missing or zero, the report must say the dollar estimate is incomplete instead of presenting a false precise cost. If prices are configured and preflight cost exceeds `llm.maxCostUsd`, `scan` fails before making the LLM call.
 
 ## Check Statuses
 
@@ -80,7 +87,7 @@ Scenario matrix rows use:
 - `Conclusion`: the report conclusion type, usually `failure`, `needs-decision`, `risk`, or `unverified`.
 - `Evidence Strength`: how strong the recorded evidence is. `runtime-observation` is stronger than `weak-live-signal`; artifact consumption review is supporting evidence unless it records a direct, reproducible contradiction.
 
-For search/recommendation/research projects, very low-score adjacent leads should generally be treated as runtime failures when they are displayed as organized results, while no-result reports with useful search coverage and recovery guidance should generally be treated as `Review`.
+For search/recommendation/research projects, contract-weak or unsupported adjacent leads should be judged against the generated acceptance contract and scenario evidence, while no-result reports with useful search coverage and recovery guidance should generally be treated as `Review`.
 
 ## Full Functional Flow Verification
 
@@ -119,8 +126,8 @@ For vibeCoding projects, user-visible output is part of the functional contract.
 - output must not repeat the same useful-looking content enough to mislead the user;
 - returned links, repositories, files, reports, exports, generated code and references must be deduplicated and, when possible, minimally consumed;
 - consumed targets must support the product's relevance/usefulness claim, or the output must clearly label them as weak, adjacent, rejected or unverified;
-- zero-score or no-evidence candidates must not be presented as normal references;
-- directory/list/newsletter repositories must not be treated as direct project matches unless that is what the user requested.
+- project-specific relevance, scoring and candidate-quality expectations should come from the generated acceptance contract and recorded scenario evidence;
+- repository/category relevance must be judged by the generated acceptance contract and recorded scenario evidence, not by built-in category labels alone.
 
 The profile check `user-visible-report-quality-passed` is the standard gate for these findings. If relevant runtime artifacts exist and this check fails, `AGENT_TEST_QA_REPORT.md` must include developer-actionable findings in the User-Visible Report Quality section.
 

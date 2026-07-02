@@ -29,7 +29,8 @@ export async function main(args) {
 
   const result = await runScan(options);
 
-  console.log(`Single QA Markdown report written to ${result.primaryMarkdownPath ?? result.reportPath}`);
+  console.log(`Developer/agent QA report written to ${result.primaryMarkdownPath ?? result.reportPath}`);
+  console.log(`User QA summary written to ${result.userSummaryPath}`);
   console.log(`JSON written to ${result.jsonPath}`);
   printActualUsage(result.report.execution?.usage);
 
@@ -66,20 +67,22 @@ function printHelp() {
 
 Usage:
   agent-test scan <path-or-github-url> [--out <dir>]
-  agent-test scan --target <path-or-github-url> --out <dir> [--mode basic]
+  agent-test scan --target <path-or-github-url> --out <dir>
   agent-test scan --config agent-test.config.json
   agent-test scan --target . --max-files 500
   agent-test scan --target . --fail-on-check-failures
   agent-test run --target <path> --out <dir> --name <name> [--env KEY=VALUE] -- <command> [args...]
 
-Current MVP:
+Current behavior:
+  - one acceptance mode only; LLM API key is required
   - local path scanning
   - public GitHub repository cloning for static scan
   - project metadata detection
   - Markdown requirement candidate extraction
-  - basic self-quality checks
-  - single Markdown QA handoff report and JSON report generation
+  - LLM-generated project understanding and acceptance rules
+  - deterministic self-quality checks
+  - developer/agent Markdown report, non-technical user summary, and JSON report generation
   - explicit dynamic command artifact recording
-  - no LLM/API token usage in basic mode; reports preflight estimate and actual usage
+  - preflight token/cost estimate and actual LLM usage reporting
 `);
 }

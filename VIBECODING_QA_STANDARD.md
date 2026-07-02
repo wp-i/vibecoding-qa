@@ -100,7 +100,13 @@
 
 ## 7. 必须交付的最终报告
 
-交付给开发人员的核心报告是 `functional-acceptance-report.md`。该报告必须包含：
+每次正式产出必须包含两份 Markdown 报告和一份机器报告：
+
+- `AGENT_TEST_QA_REPORT.md`：交付给开发人员、测试 agent 和修复 agent 的完整报告。
+- `USER_QA_SUMMARY.md`：交付给非技术用户、产品或业务负责人的精简报告。
+- `report.json`：交付给自动化系统、CI 和历史对比的机器可读报告。
+
+开发/agent 报告必须包含：
 
 - 总体结论：PASS/FAIL/PARTIAL/UNVERIFIED。
 - 测试范围和边界。
@@ -121,14 +127,16 @@
 
 当前 `agent-test` 已实现以下通用能力：
 
-- 需求优先的 basic profile。
+- LLM-required acceptance profile。
+- LLM 生成项目专属验收契约。
 - AI 生成项目常见缺陷预检。
 - 用户可见报告质量分析器：`src/analyzers/user-report-quality.js`。
 - 用户可见输出质量闸门：`user-visible-report-quality-passed`。
 - 用户报告校验 probe：`npm run probe:user-report`。
 - GitHub URL 浏览器核验 probe：`npm run probe:github-url-review`。
 - Playwright browser smoke probe：`npm run probe:browser`。
-- 功能验收报告：`functional-acceptance-report.md`。
+- 开发/agent 功能验收报告：`AGENT_TEST_QA_REPORT.md`。
+- 非技术用户摘要报告：`USER_QA_SUMMARY.md`。
 - 机器可读报告：`report.json`。
 - 自举扫描：`npm run scan:self`。
 

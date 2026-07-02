@@ -1,6 +1,3 @@
-const VERY_WEAK_SCORE_MAX = 10;
-const USABLE_SCORE_MIN = 50;
-
 export function collectRuntimeScenarioFindingsFromArtifacts(artifacts = []) {
   return artifacts.flatMap((artifact) => runtimeScenarioFindingsForArtifact(artifact));
 }
@@ -28,11 +25,8 @@ export function classifyScenarioArtifact(artifact) {
   const scores = extractScores(text);
   const urls = extractGithubUrls(text);
   const signals = scenarioSignals(text);
-  const bestScore = scores.length ? Math.max(...scores) : null;
   const scoreRange = scores.length ? `${Math.min(...scores)}-${Math.max(...scores)}/100` : "none";
   const hasUsefulEmptyRecovery = hasRecoveryEvidence(text);
-  const veryWeakLead = bestScore !== null && bestScore <= VERY_WEAK_SCORE_MAX;
-  const lowConfidenceLead = bestScore !== null && bestScore < USABLE_SCORE_MIN;
   const explicitlyWeak = signals.includes("not directly adoptable")
     || signals.includes("core capability unconfirmed")
     || signals.includes("adjacent only");
@@ -66,32 +60,17 @@ export function classifyScenarioArtifact(artifact) {
     };
   }
 
-  if (veryWeakLead || (lowConfidenceLead && explicitlyWeak)) {
+  if (explicitlyWeak) {
     return {
       urlCount: urls.length,
       scoreRange,
       signals,
-      result: "Fail",
-      conclusion: "failure",
-      evidenceStrength: "runtime-observation",
-      title: "Real user scenario returned only very weak decision support",
-      actual: "The executed scenario completed successfully but returned very low-score, explicitly weak, or core-unconfirmed leads as organized results.",
-      expected: "A completed research/recommendation report should return directly usable results when available; if only very weak leads remain, it should present them as search failure context rather than normal organized leads.",
-      fixFocus: "Tighten core intent extraction and candidate admission: do not let generic terms such as open-source/tool/project dominate when the scenario requires specific capabilities, and keep very weak adjacent leads out unless they are explicitly useful to the user's next decision."
-    };
-  }
-
-  if (lowConfidenceLead) {
-    return {
-      urlCount: urls.length,
-      scoreRange,
-      signals: unique([...signals, "low confidence lead"]),
       result: "Review",
       conclusion: "needs-decision",
       evidenceStrength: "weak-live-signal",
-      title: "Real user scenario returned low-confidence leads",
-      actual: "The scenario returned candidates below the normal usable-confidence threshold.",
-      expected: "Low-confidence leads should be reviewed against the product contract and labeled clearly as weak, adjacent, rejected, or unverified."
+      title: "Real user scenario returned explicitly weak or adjacent output",
+      actual: "The scenario completed and labeled its output as adjacent, not directly adoptable, or core-unconfirmed.",
+      expected: "Explicitly weak or adjacent output should be reviewed against the LLM-generated project contract and the user's documented goal."
     };
   }
 
@@ -119,7 +98,7 @@ export function classifyScenarioArtifact(artifact) {
     conclusion: "risk",
     evidenceStrength: "runtime-smoke",
     title: "Real user scenario produced a usable result",
-    actual: "The scenario produced no obvious low-score or empty-output quality signal.",
+    actual: "The scenario produced no obvious weak-output or empty-output quality signal.",
     expected: "The scenario should produce a result aligned with the user's request."
   };
 }

@@ -21,7 +21,7 @@ test("analyzeUserVisibleReportText rejects completed blank reports without recov
   );
 });
 
-test("analyzeUserVisibleReportText rejects zero-score and directory repository references", () => {
+test("analyzeUserVisibleReportText does not hard-fail zero-score or directory wording without a project contract", () => {
   const result = analyzeUserVisibleReportText([
     "Reference project",
     "https://github.com/example-org/awesome-widget-directory",
@@ -29,9 +29,8 @@ test("analyzeUserVisibleReportText rejects zero-score and directory repository r
     "A list of cool, interesting projects of GitHub."
   ].join("\n"));
 
-  assert.equal(result.passed, false);
-  assert.equal(result.findings.some((finding) => finding.kind === "zero-score-reference-shown"), true);
-  assert.equal(result.findings.some((finding) => finding.kind === "directory-repo-returned"), true);
+  assert.equal(result.findings.some((finding) => finding.kind === "zero-score-reference-shown"), false);
+  assert.equal(result.findings.some((finding) => finding.kind === "directory-repo-returned"), false);
 });
 
 test("analyzeUserVisibleReportText rejects internal content and duplicated urls", () => {
@@ -161,9 +160,9 @@ test("analyzeUserVisibleReportsFromArtifacts includes browser user journey defec
 
 test("validateUserReportOutput unwraps browser bodyText", () => {
   const result = validateUserReportOutput({
-    bodyText: "Project: https://github.com/demo/project\nrelevance: 0/100"
+    bodyText: "Traceback (most recent call last):\n  File \"app.py\", line 1"
   });
 
   assert.equal(result.passed, false);
-  assert.equal(result.findings.some((finding) => finding.kind === "zero-score-reference-shown"), true);
+  assert.equal(result.findings.some((finding) => finding.kind === "unwanted-user-visible-content"), true);
 });
