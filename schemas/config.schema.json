@@ -108,9 +108,9 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["md", "json"]
+            "enum": ["md", "pdf", "json"]
           },
-          "default": ["md", "json"]
+          "default": ["md", "pdf", "json"]
         }
       }
     }

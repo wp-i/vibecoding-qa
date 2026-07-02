@@ -30,7 +30,7 @@ export async function main(args) {
   const result = await runScan(options);
 
   console.log(`Developer/agent QA report written to ${result.primaryMarkdownPath ?? result.reportPath}`);
-  console.log(`User QA summary written to ${result.userSummaryPath}`);
+  console.log(`User QA PDF summary written to ${result.userSummaryPath}`);
   console.log(`JSON written to ${result.jsonPath}`);
   printActualUsage(result.report.execution?.usage);
 
@@ -81,7 +81,7 @@ Current behavior:
   - Markdown requirement candidate extraction
   - LLM-generated project understanding and acceptance rules
   - deterministic self-quality checks
-  - developer/agent Markdown report, non-technical user summary, and JSON report generation
+  - developer/agent Markdown report, non-technical PDF summary, and JSON report generation
   - explicit dynamic command artifact recording
   - preflight token/cost estimate and actual LLM usage reporting
 `);

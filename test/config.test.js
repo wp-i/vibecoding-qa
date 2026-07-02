@@ -21,7 +21,7 @@ test("mergeConfig keeps defaults and applies overrides", () => {
   assert.equal(config.llm.maxCostUsd, 1.25);
   assert.deepEqual(config.security.ignoreSecretPaths, ["local.env"]);
   assert.equal(config.report.output, "tmp/report");
-  assert.deepEqual(config.report.formats, ["md", "json"]);
+  assert.deepEqual(config.report.formats, ["md", "pdf", "json"]);
   assert.equal(config.report.failOnCheckFailures, false);
 });
 

@@ -9,7 +9,7 @@ import { scanOverfitRisks } from "../analyzers/overfit.js";
 import { analyzeUserVisibleReportsFromArtifacts } from "../analyzers/user-report-quality.js";
 import { runBasicProfile } from "../profiles/basic.js";
 import { renderFunctionalAcceptanceReport } from "../reports/functional-acceptance.js";
-import { renderUserQaSummary } from "../reports/user-summary.js";
+import { writeUserQaSummaryPdf } from "../reports/user-summary.js";
 import { validateReport } from "../reports/validate.js";
 import {
   estimateUsd,
@@ -91,12 +91,12 @@ export async function runScan(options) {
 
   await mkdir(options.outputDir, { recursive: true });
   const reportPath = join(options.outputDir, "AGENT_TEST_QA_REPORT.md");
-  const userSummaryPath = join(options.outputDir, "USER_QA_SUMMARY.md");
+  const userSummaryPath = join(options.outputDir, "USER_QA_SUMMARY.pdf");
   const jsonPath = join(options.outputDir, "report.json");
 
   await removeLegacyMarkdownReports(options.outputDir);
   await writeFile(reportPath, renderFunctionalAcceptanceReport(report), "utf8");
-  await writeFile(userSummaryPath, renderUserQaSummary(report), "utf8");
+  await writeUserQaSummaryPdf(report, userSummaryPath);
   await writeFile(jsonPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
   return {
@@ -154,6 +154,7 @@ export function createUsageSummary(config = {}) {
 
 async function removeLegacyMarkdownReports(outputDir) {
   await Promise.all([
+    rm(join(outputDir, "USER_QA_SUMMARY.md"), { force: true }),
     rm(join(outputDir, "report.md"), { force: true }),
     rm(join(outputDir, "functional-acceptance-report.md"), { force: true })
   ]);

@@ -71,7 +71,7 @@ export function defaultConfig() {
     },
     report: {
       output: "reports/latest",
-      formats: ["md", "json"],
+      formats: ["md", "pdf", "json"],
       failOnCheckFailures: false
     }
   };

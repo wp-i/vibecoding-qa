@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { createUsageSummary, runScan } from "../src/core/run-scan.js";
 
 process.env.AGENT_TEST_LLM_API_KEY = "test-key";
+process.env.AGENT_TEST_PDF_MOCK = "1";
 process.env.AGENT_TEST_LLM_MOCK_RESPONSE = JSON.stringify({
   projectType: "test fixture",
   userFlows: ["Run the documented user flow"],
@@ -93,21 +94,20 @@ test("runScan writes markdown and json reports for a local fixture", async () =>
   assert.equal(result.report.requirements.count > 0, true);
 
   const markdown = await readFile(join(outputDir, "AGENT_TEST_QA_REPORT.md"), "utf8");
-  const userSummary = await readFile(join(outputDir, "USER_QA_SUMMARY.md"), "utf8");
+  const userSummary = await readFile(join(outputDir, "USER_QA_SUMMARY.pdf"));
   const json = JSON.parse(await readFile(join(outputDir, "report.json"), "utf8"));
 
+  await assert.rejects(() => access(join(outputDir, "USER_QA_SUMMARY.md")));
   await assert.rejects(() => access(join(outputDir, "report.md")));
   await assert.rejects(() => access(join(outputDir, "functional-acceptance-report.md")));
 
   assert.equal(result.reportPath, join(outputDir, "AGENT_TEST_QA_REPORT.md"));
-  assert.equal(result.userSummaryPath, join(outputDir, "USER_QA_SUMMARY.md"));
+  assert.equal(result.userSummaryPath, join(outputDir, "USER_QA_SUMMARY.pdf"));
   assert.equal(result.functionalReportPath, result.reportPath);
   assert.equal(result.primaryMarkdownPath, result.reportPath);
   assert.match(markdown, /Functional Acceptance QA Report/);
-  assert.match(markdown, /USER_QA_SUMMARY.md/);
-  assert.match(userSummary, /用户版测试报告/);
-  assert.match(userSummary, /给非技术读者的结论/);
-  assert.match(userSummary, /详细日志、失败位置和修复线索请看同目录的 `AGENT_TEST_QA_REPORT.md`/);
+  assert.match(markdown, /USER_QA_SUMMARY\.pdf/);
+  assert.equal(userSummary.subarray(0, 4).toString("utf8"), "%PDF");
   assert.match(markdown, /Scope And Method/);
   assert.match(markdown, /API Key And Token Cost/);
   assert.match(markdown, /API key required: yes/);

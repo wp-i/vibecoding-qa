@@ -18,6 +18,7 @@ const EXCLUDED_DIRS = new Set([
 const MARKDOWN_EXTENSIONS = new Set([".md", ".markdown"]);
 const GENERATED_REPORT_FILES = new Set([
   "AGENT_TEST_QA_REPORT.md",
+  "USER_QA_SUMMARY.pdf",
   "USER_QA_SUMMARY.md",
   "report.json",
   "functional-acceptance-report.md",

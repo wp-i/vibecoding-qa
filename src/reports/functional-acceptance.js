@@ -163,7 +163,7 @@ function scopeBlock(report) {
     "### Generated Artifacts",
     "",
     "- `AGENT_TEST_QA_REPORT.md`: developer/agent handoff report with reproduction evidence and repair guidance.",
-    "- `USER_QA_SUMMARY.md`: concise non-technical reader report for product/business review.",
+    "- `USER_QA_SUMMARY.pdf`: concise non-technical reader report for product/business review.",
     "- `report.json`: machine-readable scan result.",
     "- Runtime artifacts remain under `runtime/` and are summarized in this report; they are supporting evidence, not additional handoff reports.",
     "",

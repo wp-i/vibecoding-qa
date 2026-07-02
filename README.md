@@ -10,7 +10,7 @@
 AI 写出来的项目，真的完成需求了吗？`vibecoding-qa` 读取项目文档、源码、运行证据和用户可见输出，生成三类产物：
 
 - `AGENT_TEST_QA_REPORT.md`：给开发人员和修复 agent 的完整验收报告。
-- `USER_QA_SUMMARY.md`：给非技术读者看的精简决策报告。
+- `USER_QA_SUMMARY.pdf`：给非技术读者看的精简 PDF 决策报告。
 - `report.json`：给自动化、CI 和历史对比使用的机器报告。
 
 | 你关心的事 | 当前答案 |
@@ -27,9 +27,12 @@ PowerShell:
 
 ```powershell
 npm install
+npm run setup:browser
 $env:AGENT_TEST_LLM_API_KEY="your_openai_compatible_key"
 node ./bin/agent-test.js scan . --out reports/latest
 ```
+
+`USER_QA_SUMMARY.pdf` 由 Playwright Chromium 生成；首次安装或 CI 环境请先运行 `npm run setup:browser`。
 
 扫 GitHub 仓库：
 
@@ -42,7 +45,7 @@ node ./bin/agent-test.js scan https://github.com/user/repo --out reports/repo
 ```text
 reports/latest/
 ├── AGENT_TEST_QA_REPORT.md
-├── USER_QA_SUMMARY.md
+├── USER_QA_SUMMARY.pdf
 └── report.json
 ```
 
@@ -51,10 +54,10 @@ reports/latest/
 | 文件 | 读者 | 用途 |
 | --- | --- | --- |
 | `AGENT_TEST_QA_REPORT.md` | 开发人员、测试 agent、修复 agent | 复现命令、证据、缺陷、风险、验收标准和修复交接 |
-| `USER_QA_SUMMARY.md` | 产品、业务经理、非技术决策者 | 用更少技术语言说明能不能发布、测了什么、主要风险和下一步 |
+| `USER_QA_SUMMARY.pdf` | 产品、业务经理、非技术决策者 | 可直接打开阅读，用更少技术语言说明能不能发布、测了什么、主要风险和下一步 |
 | `report.json` | 自动化系统、CI、历史对比 | 结构化记录项目元数据、检查结果、runtime artifacts 和 token usage |
 
-以后项目产出默认都应保留这两份 Markdown 报告：一份面向开发/agent，一份面向纯用户。
+以后项目产出默认都应保留两份人读报告：开发/agent 版 Markdown，以及纯用户版 PDF。
 
 ## 它重点检查什么
 
@@ -126,7 +129,7 @@ Estimated cost: $0 (max configured: $5)
 | LLM 生成项目专属验收契约 | required |
 | runtime artifacts 汇总 | supported |
 | 开发/agent Markdown 报告 | supported |
-| 纯用户 Markdown 摘要 | supported |
+| 纯用户 PDF 摘要 | supported |
 | JSON 机器报告 | supported |
 | 自动安装被测项目依赖 | no |
 | 默认执行被测项目代码 | no，需要先用 `agent-test run` 记录 |

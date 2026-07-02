@@ -24,6 +24,6 @@
   "profiles": ["auto"],
   "report": {
     "output": "reports/self/latest",
-    "formats": ["md", "json"]
+    "formats": ["md", "pdf", "json"]
   }
 }

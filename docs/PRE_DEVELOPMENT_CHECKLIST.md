@@ -56,6 +56,6 @@
 ## 7. 第一版脚手架验证结果
 
 - [x] `npm test` 通过。
-- [x] `npm run scan:self` 可生成 `AGENT_TEST_QA_REPORT.md`、`USER_QA_SUMMARY.md` 和 `report.json`。
+- [x] `npm run scan:self` 可生成 `AGENT_TEST_QA_REPORT.md`、`USER_QA_SUMMARY.pdf` 和 `report.json`。
 - [x] 自扫描 acceptance checks 通过。
 - [x] 当前 `scan` 不会默认执行陌生项目代码；动态证据必须通过 `agent-test run` 显式记录。

@@ -24,13 +24,15 @@ test("inspectProject excludes generated QA report files", async () => {
   const root = await mkdtemp(join(tmpdir(), "agent-test-generated-report-"));
   await writeFile(join(root, "README.md"), "# Project\n", "utf8");
   await writeFile(join(root, "AGENT_TEST_QA_REPORT.md"), "# Developer report\n", "utf8");
-  await writeFile(join(root, "USER_QA_SUMMARY.md"), "# User report\n", "utf8");
+  await writeFile(join(root, "USER_QA_SUMMARY.pdf"), "%PDF-1.4\n", "utf8");
+  await writeFile(join(root, "USER_QA_SUMMARY.md"), "# Legacy user report\n", "utf8");
   await writeFile(join(root, "report.json"), "{}\n", "utf8");
 
   const project = await inspectProject(root);
 
   assert.equal(project.files.some((file) => file.path === "README.md"), true);
   assert.equal(project.files.some((file) => file.path === "AGENT_TEST_QA_REPORT.md"), false);
+  assert.equal(project.files.some((file) => file.path === "USER_QA_SUMMARY.pdf"), false);
   assert.equal(project.files.some((file) => file.path === "USER_QA_SUMMARY.md"), false);
   assert.equal(project.files.some((file) => file.path === "report.json"), false);
 });

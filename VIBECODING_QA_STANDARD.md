@@ -103,7 +103,7 @@
 每次正式产出必须包含两份 Markdown 报告和一份机器报告：
 
 - `AGENT_TEST_QA_REPORT.md`：交付给开发人员、测试 agent 和修复 agent 的完整报告。
-- `USER_QA_SUMMARY.md`：交付给非技术用户、产品或业务负责人的精简报告。
+- `USER_QA_SUMMARY.pdf`：交付给非技术用户、产品或业务负责人的精简 PDF 报告。
 - `report.json`：交付给自动化系统、CI 和历史对比的机器可读报告。
 
 开发/agent 报告必须包含：
@@ -136,7 +136,7 @@
 - GitHub URL 浏览器核验 probe：`npm run probe:github-url-review`。
 - Playwright browser smoke probe：`npm run probe:browser`。
 - 开发/agent 功能验收报告：`AGENT_TEST_QA_REPORT.md`。
-- 非技术用户摘要报告：`USER_QA_SUMMARY.md`。
+- 非技术用户 PDF 摘要报告：`USER_QA_SUMMARY.pdf`。
 - 机器可读报告：`report.json`。
 - 自举扫描：`npm run scan:self`。
 

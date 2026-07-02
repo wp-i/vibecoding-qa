@@ -592,7 +592,7 @@ Profile 不应写死具体项目名称，而应基于语言、框架、文件特
 当前实现应同时输出：
 
 - `AGENT_TEST_QA_REPORT.md`：适合开发人员、测试 agent 和修复 agent 阅读。
-- `USER_QA_SUMMARY.md`：适合非技术用户、产品或业务负责人阅读。
+- `USER_QA_SUMMARY.pdf`：适合非技术用户、产品或业务负责人直接打开阅读。
 - `report.json`：适合自动化系统消费。
 - `artifacts/`：保存日志、截图、覆盖率、扫描结果。
 
@@ -617,7 +617,7 @@ Profile 不应写死具体项目名称，而应基于语言、框架、文件特
 - 提取 README/Markdown 中的需求候选项。
 - 执行安装、构建、测试、lint、安全扫描中的可用项。
 - 支持 LLM-required acceptance 路径。
-- 生成开发/agent Markdown 报告、纯用户 Markdown 摘要和 JSON 机器报告。
+- 生成开发/agent Markdown 报告、纯用户 PDF 摘要和 JSON 机器报告。
 - 使用一个或多个样例项目验证流程。
 
 ### 阶段二：多测试方式扩展

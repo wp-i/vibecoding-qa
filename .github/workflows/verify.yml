@@ -12,4 +12,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm ci
+      - run: npm run setup:browser
       - run: npm run verify
+        env:
+          AGENT_TEST_LLM_API_KEY: ci-test-key
+          AGENT_TEST_LLM_MOCK_RESPONSE: '{"projectType":"ci self scan","userFlows":["Run self verification"],"userVisibleOutputs":["QA artifacts"],"acceptanceRules":[{"id":"ci-self-report","title":"CI self report exists","rationale":"The repository must produce QA artifacts in CI.","testMethod":"static","severity":"Major"}],"costRules":["CI mock token usage must be recorded."]}'

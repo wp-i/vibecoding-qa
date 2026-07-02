@@ -31,10 +31,12 @@ The configuration contract is defined in [schemas/config.schema.json](../schemas
   "profiles": ["auto"],
   "report": {
     "output": "reports/self/latest",
-    "formats": ["md", "json"]
+    "formats": ["md", "pdf", "json"]
   }
 }
 ```
+
+`md` produces the developer/agent report, `pdf` produces the concise non-technical decision report, and `json` preserves machine-readable evidence. PDF generation uses Playwright Chromium; run `npm run setup:browser` once after install if the browser runtime is missing.
 
 ## CLI Override Rules
 

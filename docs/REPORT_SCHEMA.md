@@ -3,12 +3,12 @@
 `agent-test` writes two human-facing reports and one machine-readable report:
 
 - `AGENT_TEST_QA_REPORT.md` for developer handoff and repair-agent input.
-- `USER_QA_SUMMARY.md` for non-technical product, business or stakeholder review.
+- `USER_QA_SUMMARY.pdf` for non-technical product, business or stakeholder review.
 - `report.json` for automation, CI gates and historical comparison.
 
 `AGENT_TEST_QA_REPORT.md` is the preferred handoff artifact when the goal is to ask another agent/developer to reproduce, diagnose and fix functional defects. It contains defect titles, requirement basis, test case class, actual result, expected result, suggested fix area, acceptance criteria and summarized runtime evidence.
 
-`USER_QA_SUMMARY.md` is the preferred reading artifact when the audience only needs a concise decision report. It must reduce technical language, keep the conclusion visible near the top, summarize tested flows in plain language, and translate defects or risks into business-friendly impact and next steps.
+`USER_QA_SUMMARY.pdf` is the preferred reading artifact when the audience only needs a concise decision report. It must be easy to open without developer tools, reduce technical language, keep the conclusion visible near the top, summarize tested flows in plain language, and translate defects or risks into business-friendly impact and next steps.
 
 The machine-readable contract is defined in [schemas/report.schema.json](../schemas/report.schema.json).
 

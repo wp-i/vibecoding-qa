@@ -19,13 +19,32 @@ const scenarios = [
   },
   {
     name: "candidate-quality-obvious-failure",
-    expectedKinds: ["zero-score-reference-shown", "directory-repo-returned"],
-    run: () => analyzeUserVisibleReportText([
-      "Reference project",
-      "https://github.com/example-org/awesome-widget-directory",
-      "relevance: 0/100",
-      "A list of cool, interesting projects of GitHub."
-    ].join("\n")).findings
+    expectedKinds: ["consumed-target-contradicts-report"],
+    run: () => analyzeUserVisibleReportsFromArtifacts([
+      {
+        name: "scenario-01-directory-lead",
+        userVisibleText: [
+          "Recommended project: https://github.com/example-org/awesome-widget-directory",
+          "Reason: directly supports the requested production workflow."
+        ].join("\n")
+      },
+      {
+        name: "artifact-consumption-review",
+        outputExcerpt: [
+          JSON.stringify({
+            reviews: [
+              {
+                target: "https://github.com/example-org/awesome-widget-directory",
+                verdict: "mismatch",
+                claimedByReport: "directly supports the requested production workflow",
+                summary: "Observed artifact is a broad directory/listing, not an implementation of the requested workflow.",
+                evidence: ["README summary: A list of cool, interesting projects of GitHub."]
+              }
+            ]
+          })
+        ]
+      }
+    ]).findings
   },
   {
     name: "user-visible-internal-and-duplicate-content",
